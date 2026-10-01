@@ -41,11 +41,7 @@ export const TodoList: React.FC<Props> = ({ todos, isLoading }) => {
             {todo.title}
           </span>
 
-          <button
-            type="button"
-            className="todo__remove"
-            data-cy="TodoDelete"
-          >
+          <button type="button" className="todo__remove" data-cy="TodoDelete">
             ×
           </button>
 
