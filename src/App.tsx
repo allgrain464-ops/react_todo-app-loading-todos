@@ -1,15 +1,14 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useEffect, useState } from 'react';
 import { UserWarning } from './UserWarning';
 import { USER_ID, getTodos } from './api/todos';
 import { Todo } from './types/Todo';
-
-type Filter = 'all' | 'active' | 'completed';
+import { Filter } from './types/Filter';
+import { TodoList } from './components/TodoList';
+import { TodoFooter } from './components/TodoFooter';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter] = useState<Filter>(Filter.All);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,10 +44,10 @@ export const App: React.FC = () => {
 
   const visibleTodos = todos.filter(todo => {
     switch (filter) {
-      case 'active':
+      case Filter.Active:
         return !todo.completed;
 
-      case 'completed':
+      case Filter.Completed:
         return todo.completed;
 
       default:
@@ -57,12 +56,9 @@ export const App: React.FC = () => {
   });
 
   const activeTodosCount = todos.filter(todo => !todo.completed).length;
+  const hasCompletedTodos = todos.some(todo => todo.completed);
 
-  const handleFilterChange = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-    nextFilter: Filter,
-  ) => {
-    event.preventDefault();
+  const handleFilterChange = (nextFilter: Filter) => {
     setFilter(nextFilter);
   };
 
@@ -93,106 +89,16 @@ export const App: React.FC = () => {
         </header>
 
         {todos.length > 0 && (
-          <section className="todoapp__main" data-cy="TodoList">
-            {isLoading && (
-              <div data-cy="Todo" className="todo">
-                <div
-                  data-cy="TodoLoader"
-                  className="modal overlay is-active"
-                >
-                  <div className="modal-background has-background-white-ter" />
-                  <div className="loader" />
-                </div>
-              </div>
-            )}
-
-            {visibleTodos.map(todo => (
-              <div
-                key={todo.id}
-                data-cy="Todo"
-                className={`todo ${todo.completed ? 'completed' : ''}`}
-              >
-                <label className="todo__status-label">
-                  <input
-                    data-cy="TodoStatus"
-                    type="checkbox"
-                    className="todo__status"
-                    checked={todo.completed}
-                    readOnly
-                  />
-                </label>
-
-                <span data-cy="TodoTitle" className="todo__title">
-                  {todo.title}
-                </span>
-
-                <button
-                  type="button"
-                  className="todo__remove"
-                  data-cy="TodoDelete"
-                >
-                  ×
-                </button>
-
-                <div data-cy="TodoLoader" className="modal overlay">
-                  <div className="modal-background has-background-white-ter" />
-                  <div className="loader" />
-                </div>
-              </div>
-            ))}
-          </section>
+          <TodoList todos={visibleTodos} isLoading={isLoading} />
         )}
 
         {todos.length > 0 && (
-          <footer className="todoapp__footer" data-cy="Footer">
-            <span className="todo-count" data-cy="TodosCounter">
-              {activeTodosCount} items left
-            </span>
-
-            <nav className="filter" data-cy="Filter">
-              <a
-                href="#/"
-                className={`filter__link ${
-                  filter === 'all' ? 'selected' : ''
-                }`}
-                data-cy="FilterLinkAll"
-                onClick={event => handleFilterChange(event, 'all')}
-              >
-                All
-              </a>
-
-              <a
-                href="#/active"
-                className={`filter__link ${
-                  filter === 'active' ? 'selected' : ''
-                }`}
-                data-cy="FilterLinkActive"
-                onClick={event => handleFilterChange(event, 'active')}
-              >
-                Active
-              </a>
-
-              <a
-                href="#/completed"
-                className={`filter__link ${
-                  filter === 'completed' ? 'selected' : ''
-                }`}
-                data-cy="FilterLinkCompleted"
-                onClick={event => handleFilterChange(event, 'completed')}
-              >
-                Completed
-              </a>
-            </nav>
-
-            <button
-              type="button"
-              className="todoapp__clear-completed"
-              data-cy="ClearCompletedButton"
-              disabled={!todos.some(todo => todo.completed)}
-            >
-              Clear completed
-            </button>
-          </footer>
+          <TodoFooter
+            filter={filter}
+            activeTodosCount={activeTodosCount}
+            hasCompletedTodos={hasCompletedTodos}
+            onFilterChange={handleFilterChange}
+          />
         )}
       </div>
 
@@ -208,7 +114,6 @@ export const App: React.FC = () => {
           className="delete"
           onClick={handleHideError}
         />
-
         Unable to load todos
       </div>
     </div>
